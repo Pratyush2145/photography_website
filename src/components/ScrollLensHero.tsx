@@ -157,7 +157,7 @@ export function ScrollLensHero() {
         ) : (
           <video
             ref={videoRef}
-            src="/videos/lens-reveal.mp4"
+            src="https://lens-reveal.b-cdn.net/lens-reveal.mp4"
             muted
             playsInline
             preload="auto"
