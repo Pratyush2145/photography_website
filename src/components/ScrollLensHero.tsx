@@ -20,12 +20,13 @@ export function ScrollLensHero() {
   }, []);
 
   useEffect(() => {
-    if (isMobile) return;
-
     const v = videoRef.current;
     if (!v) return;
 
-    // Ensure video stays paused — we drive currentTime manually
+    // On mobile, video won't scrub but will still display
+    if (isMobile) return;
+
+    // Ensure video stays paused — we drive currentTime manually (desktop only)
     v.pause();
 
     const ensurePaused = () => {
@@ -144,31 +145,19 @@ export function ScrollLensHero() {
       aria-label="Hero"
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-[oklch(0.12_0.01_40)]">
-        {isMobile ? (
-          <img
-            src={weddingArch}
-            alt="Couple beneath floral arch at sunset"
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{
-              transform: "scale(1.05)",
-              willChange: "transform",
-            }}
-          />
-        ) : (
-          <video
-            ref={videoRef}
-            src="https://lens-reveal.b-cdn.net/lens-reveal.mp4"
-            muted
-            playsInline
-            preload="auto"
-            disableRemotePlayback
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{
-              transform: `scale(${1.05 + progress * 0.05})`,
-              willChange: "transform",
-            }}
-          />
-        )}
+        <video
+          ref={videoRef}
+          src="https://lens-reveal.b-cdn.net/lens-reveal.mp4"
+          muted
+          playsInline
+          preload="auto"
+          disableRemotePlayback
+          className="absolute inset-0 h-full w-full object-cover"
+          style={{
+            transform: `scale(${isMobile ? 1.05 : 1.05 + progress * 0.05})`,
+            willChange: "transform",
+          }}
+        />
 
         {/* warm vignette */}
         <div
