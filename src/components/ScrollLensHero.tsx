@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import weddingArch from "@/assets/wedding-arch.jpg";
 
 export function ScrollLensHero() {
   const sectionRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [progress, setProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   // target/current time refs for smooth lerp
   const targetTimeRef = useRef(0);
@@ -12,6 +14,14 @@ export function ScrollLensHero() {
   const seekingRef = useRef(false);
 
   useEffect(() => {
+    const mobile =
+      window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile/i.test(navigator.userAgent);
+    setIsMobile(mobile);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return;
+
     const v = videoRef.current;
     if (!v) return;
 
@@ -119,7 +129,7 @@ export function ScrollLensHero() {
       v.removeEventListener("play", ensurePaused);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
     };
-  }, []);
+  }, [isMobile]);
 
   // Text fades: intro visible early, outro emerges late
   const introOpacity = Math.max(0, 1 - progress * 3);
@@ -134,19 +144,31 @@ export function ScrollLensHero() {
       aria-label="Hero"
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden bg-[oklch(0.12_0.01_40)]">
-        <video
-          ref={videoRef}
-          src="/videos/lens-reveal.mp4"
-          muted
-          playsInline
-          preload="auto"
-          disableRemotePlayback
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{
-            transform: `scale(${1.05 + progress * 0.05})`,
-            willChange: "transform",
-          }}
-        />
+        {isMobile ? (
+          <img
+            src={weddingArch}
+            alt="Couple beneath floral arch at sunset"
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{
+              transform: "scale(1.05)",
+              willChange: "transform",
+            }}
+          />
+        ) : (
+          <video
+            ref={videoRef}
+            src="/videos/lens-reveal.mp4"
+            muted
+            playsInline
+            preload="auto"
+            disableRemotePlayback
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{
+              transform: `scale(${1.05 + progress * 0.05})`,
+              willChange: "transform",
+            }}
+          />
+        )}
 
         {/* warm vignette */}
         <div
