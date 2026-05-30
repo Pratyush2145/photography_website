@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { FormEvent, useState } from "react";
 import { ScrollLensHero } from "@/components/ScrollLensHero";
 import weddingArch from "@/assets/wedding-arch.jpg";
 import weddingTable from "@/assets/wedding-table.jpg";
@@ -55,6 +56,53 @@ const testimonials = [
 ];
 
 function Index() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    weddingDate: "",
+    message: "",
+  });
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [feedback, setFeedback] = useState("");
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("loading");
+    setFeedback("");
+
+    try {
+      const response = await fetch(
+        "https://api.sheety.co/74238cce7a5193d8bc00a1e1997c9d46/informationSpreadsheet/sheet1",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sheet1: {
+              name: formData.name,
+              email: formData.email,
+              weddingDate: formData.weddingDate,
+              message: formData.message,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      setStatus("success");
+      setFeedback("Thanks — your inquiry has been sent.");
+      setFormData({ name: "", email: "", weddingDate: "", message: "" });
+    } catch (error) {
+      console.error(error);
+      setStatus("error");
+      setFeedback("Sorry, something went wrong. Please try again.");
+    }
+  };
+
   return (
     <main className="bg-background text-foreground">
       <ScrollLensHero />
@@ -179,34 +227,48 @@ function Index() {
 
           <form
             className="mx-auto mt-12 grid max-w-2xl gap-4 text-left sm:grid-cols-2"
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={handleSubmit}
           >
             <input
               required
+              value={formData.name}
+              onChange={(event) => setFormData({ ...formData, name: event.target.value })}
               placeholder="Your name"
               className="col-span-1 rounded-sm border border-[oklch(0.98_0.01_80/0.2)] bg-transparent px-4 py-3 text-sm placeholder:text-[oklch(0.98_0.01_80/0.5)] focus:border-accent focus:outline-none"
             />
             <input
               required
               type="email"
+              value={formData.email}
+              onChange={(event) => setFormData({ ...formData, email: event.target.value })}
               placeholder="Email"
               className="col-span-1 rounded-sm border border-[oklch(0.98_0.01_80/0.2)] bg-transparent px-4 py-3 text-sm placeholder:text-[oklch(0.98_0.01_80/0.5)] focus:border-accent focus:outline-none"
             />
             <input
+              value={formData.weddingDate}
+              onChange={(event) => setFormData({ ...formData, weddingDate: event.target.value })}
               placeholder="Wedding date (or season)"
               className="col-span-2 rounded-sm border border-[oklch(0.98_0.01_80/0.2)] bg-transparent px-4 py-3 text-sm placeholder:text-[oklch(0.98_0.01_80/0.5)] focus:border-accent focus:outline-none"
             />
             <textarea
               rows={4}
+              value={formData.message}
+              onChange={(event) => setFormData({ ...formData, message: event.target.value })}
               placeholder="Tell us a little about your vision…"
               className="col-span-2 rounded-sm border border-[oklch(0.98_0.01_80/0.2)] bg-transparent px-4 py-3 text-sm placeholder:text-[oklch(0.98_0.01_80/0.5)] focus:border-accent focus:outline-none"
             />
             <button
               type="submit"
-              className="col-span-2 mt-2 rounded-sm bg-accent px-6 py-4 text-xs uppercase tracking-[0.3em] text-[oklch(0.18_0.02_40)] transition-transform hover:scale-[1.01]"
+              disabled={status === "loading"}
+              className="col-span-2 mt-2 rounded-sm bg-accent px-6 py-4 text-xs uppercase tracking-[0.3em] text-[oklch(0.18_0.02_40)] transition-transform hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Send inquiry
+              {status === "loading" ? "Sending…" : "Send inquiry"}
             </button>
+            {feedback ? (
+              <div className={`col-span-2 text-sm ${status === "success" ? "text-emerald-500" : "text-rose-500"}`}>
+                {feedback}
+              </div>
+            ) : null}
           </form>
         </div>
       </section>
